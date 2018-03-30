@@ -1,12 +1,11 @@
 // @flow
 const _ = require('lodash/fp');
-const { someGlobsMatchFilePath, getPrettierInstance } = require('../helpers');
-const { getCurrentFilePath, getCurrentScope } = require('../editorInterface');
+const { getPrettierInstance, someGlobsMatchFilePath } = require('../helpers');
+const { getCurrentFilePath, isInScope } = require('../editorInterface');
 const {
-  isFormatOnSaveEnabled,
-  getAllScopes,
   getExcludedGlobs,
   getWhitelistedGlobs,
+  isFormatOnSaveEnabled,
   isDisabledIfNotInPackageJson,
   isDisabledIfNoConfigFile,
   shouldRespectEslintignore,
@@ -16,8 +15,6 @@ const isFilePathPrettierIgnored = require('./isFilePathPrettierIgnored');
 const isPrettierInPackageJson = require('./isPrettierInPackageJson');
 
 const hasFilePath = (editor: TextEditor) => !!getCurrentFilePath(editor);
-
-const isInScope = (editor: TextEditor) => getAllScopes().includes(getCurrentScope(editor));
 
 const filePathDoesNotMatchBlacklistGlobs: (editor: TextEditor) => boolean = _.flow(
   getCurrentFilePath,
@@ -31,6 +28,7 @@ const isFilePathWhitelisted: (editor: TextEditor) => boolean = _.flow(
   getCurrentFilePath,
   (filePath: ?FilePath) => someGlobsMatchFilePath(getWhitelistedGlobs(), filePath),
 );
+
 const isEslintIgnored: (editor: TextEditor) => boolean = _.flow(getCurrentFilePath, isFilePathEslintIgnored);
 
 const isFilePathNotPrettierIgnored: (editor: TextEditor) => boolean = _.flow(
@@ -38,11 +36,18 @@ const isFilePathNotPrettierIgnored: (editor: TextEditor) => boolean = _.flow(
   _.negate(isFilePathPrettierIgnored),
 );
 
-const isPrettierConfigPresent = (editor: TextEditor): boolean =>
+const isResolveConfigDefined = (editor: TextEditor): boolean =>
   // $FlowFixMe
-  !!getPrettierInstance(editor).resolveConfig.sync &&
+  !!getPrettierInstance(editor).resolveConfig.sync;
+
+const isResolveConfigSuccessful = (editor: TextEditor): boolean =>
   // $FlowFixMe
   _.flow(getCurrentFilePath, getPrettierInstance(editor).resolveConfig.sync, _.negate(_.isNil))(editor);
+
+const isPrettierConfigPresent: TextEditor => boolean = _.overEvery([
+  isResolveConfigDefined,
+  isResolveConfigSuccessful,
+]);
 
 const shouldFormatOnSave: (editor: TextEditor) => boolean = _.overEvery([
   isFormatOnSaveEnabled,
