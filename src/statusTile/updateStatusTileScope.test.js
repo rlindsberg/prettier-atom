@@ -1,42 +1,36 @@
-jest.mock('../atomInterface');
-jest.mock('../editorInterface');
+jest.mock('../helpers');
 
-const { getCurrentScope } = require('../editorInterface');
-const { getScopes } = require('../atomInterface');
+const { isFileFormattable } = require('../helpers');
 const updateStatusTileScope = require('./updateStatusTileScope');
 
-const callUpdateStatusTileScope = editor => {
-  const div = { dataset: {} };
+const buildMockHtmlElement = () => ({ dataset: {} });
 
-  updateStatusTileScope(div, editor);
+it('sets the match-scope data attribute to "true" if the current file can be formatted', () => {
+  isFileFormattable.mockImplementation(() => true);
+  const mockHtmlElement = buildMockHtmlElement();
+  const mockEditor = {};
 
-  return div;
-};
+  updateStatusTileScope(mockHtmlElement, mockEditor);
 
-beforeEach(() => {
-  getScopes.mockImplementation(() => ['source.js']);
+  expect(mockHtmlElement.dataset.prettierCanFormatFile).toBe('true');
 });
 
-it('sets the match-scope data attribute to "true" if the editor is in scope', () => {
-  getCurrentScope.mockImplementation(() => 'source.js');
+it('sets the match-scope data attribute to "false" if the editor is not formattable', () => {
+  isFileFormattable.mockImplementation(() => false);
+  const mockHtmlElement = buildMockHtmlElement();
+  const mockEditor = {};
 
-  const div = callUpdateStatusTileScope({});
+  updateStatusTileScope(mockHtmlElement, mockEditor);
 
-  expect(div.dataset.prettierMatchScope).toBe('true');
-});
-
-it('sets the match-scope data attribute to "false" if the editor is out of scope', () => {
-  getCurrentScope.mockImplementation(() => 'source.html');
-
-  const div = callUpdateStatusTileScope({});
-
-  expect(div.dataset.prettierMatchScope).toBe('false');
+  expect(mockHtmlElement.dataset.prettierCanFormatFile).toBe('false');
 });
 
 it('sets the match-scope data attribute to "false" if there is no active editor', () => {
-  getCurrentScope.mockImplementation(() => 'source.js');
+  isFileFormattable.mockImplementation(() => true);
+  const mockHtmlElement = buildMockHtmlElement();
+  const mockEditor = null;
 
-  const div = callUpdateStatusTileScope(undefined);
+  updateStatusTileScope(mockHtmlElement, mockEditor);
 
-  expect(div.dataset.prettierMatchScope).toBe('false');
+  expect(mockHtmlElement.dataset.prettierCanFormatFile).toBe('false');
 });

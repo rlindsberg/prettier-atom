@@ -9,7 +9,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const getPrettierInstance = require('./getPrettierInstance');
 const general = require('./general');
 const atomRelated = require('./atomRelated');
+const isFileFormattable = require('./isFileFormattable');
 
 module.exports = (0, _extends3.default)({}, general, atomRelated, {
-  getPrettierInstance
+  getPrettierInstance,
+  isFileFormattable
 });

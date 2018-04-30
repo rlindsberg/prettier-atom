@@ -4824,13 +4824,13 @@ prettier-stylelint@^0.4.2:
     tempy "^0.2.1"
     update-notifier "^2.2.0"
 
-prettier@1.12.1:
-  version "1.12.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.12.1.tgz#c1ad20e803e7749faf905a409d2367e06bbe7325"
-
 prettier@^1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.7.0.tgz#47481588f41f7c90f63938feb202ac82554e7150"
+
+"prettier@github:kachkaev/prettier#file-info-dist":
+  version "1.13.0-dev"
+  resolved "https://codeload.github.com/kachkaev/prettier/tar.gz/51b9e42d0c8c920cfd683a38bdf6801f92e4dcc8"
 
 pretty-format@^22.0.3:
   version "22.0.3"

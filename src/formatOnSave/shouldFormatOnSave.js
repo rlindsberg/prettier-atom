@@ -1,7 +1,7 @@
 // @flow
 const _ = require('lodash/fp');
-const { getPrettierInstance, someGlobsMatchFilePath } = require('../helpers');
-const { getCurrentFilePath, isInScope } = require('../editorInterface');
+const { getPrettierInstance, someGlobsMatchFilePath, isFileFormattable } = require('../helpers');
+const { getCurrentFilePath } = require('../editorInterface');
 const {
   getExcludedGlobs,
   getWhitelistedGlobs,
@@ -11,7 +11,6 @@ const {
   shouldRespectEslintignore,
 } = require('../atomInterface');
 const isFilePathEslintIgnored = require('./isFilePathEslintIgnored');
-const isFilePathPrettierIgnored = require('./isFilePathPrettierIgnored');
 const isPrettierInPackageJson = require('./isPrettierInPackageJson');
 
 const hasFilePath = (editor: TextEditor) => !!getCurrentFilePath(editor);
@@ -31,11 +30,6 @@ const isFilePathWhitelisted: (editor: TextEditor) => boolean = _.flow(
 
 const isEslintIgnored: (editor: TextEditor) => boolean = _.flow(getCurrentFilePath, isFilePathEslintIgnored);
 
-const isFilePathNotPrettierIgnored: (editor: TextEditor) => boolean = _.flow(
-  getCurrentFilePath,
-  _.negate(isFilePathPrettierIgnored),
-);
-
 const isResolveConfigDefined = (editor: TextEditor): boolean =>
   // $FlowFixMe
   !!getPrettierInstance(editor).resolveConfig.sync;
@@ -52,15 +46,14 @@ const isPrettierConfigPresent: TextEditor => boolean = _.overEvery([
 const shouldFormatOnSave: (editor: TextEditor) => boolean = _.overEvery([
   isFormatOnSaveEnabled,
   hasFilePath,
-  isInScope,
   _.overSome([
     isFilePathWhitelisted,
     _.overEvery([noWhitelistGlobsPresent, filePathDoesNotMatchBlacklistGlobs]),
   ]),
   _.overSome([_.negate(shouldRespectEslintignore), _.negate(isEslintIgnored)]),
-  isFilePathNotPrettierIgnored,
   _.overSome([_.negate(isDisabledIfNotInPackageJson), isPrettierInPackageJson]),
   _.overSome([_.negate(isDisabledIfNoConfigFile), isPrettierConfigPresent]),
+  isFileFormattable,
 ]);
 
 module.exports = shouldFormatOnSave;
